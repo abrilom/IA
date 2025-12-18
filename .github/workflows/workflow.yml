@@ -1,0 +1,23 @@
+name: Ejecutar Playbook Ansible
+
+on:
+  workflow_dispatch:
+
+jobs:
+  ejecutar_playbook:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v3
+
+      - name: Instalar Ansible y dependencias
+        run: |
+          sudo apt update
+          sudo apt install -y ansible
+
+      - name: Syntax Check del Playbook
+        run: ansible-playbook --syntax-check playbook.yml -i inventario
+
+      - name: Ejecutar Playbook Ansible
+        run: ansible-playbook playbook.yml -i inventario

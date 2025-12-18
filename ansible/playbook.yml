@@ -1,48 +1,52 @@
 ---
-- name: Install Apache and configure it to listen on port 8080
+- name: Instalar y configurar Apache en puerto 8080
   hosts: all
   become: true
-  tasks:
-    - name: Install Apache
-      apt:
-        name: apache2
-        state: present
-        update_cache: yes
+  vars:
+    apache_package_name: "{{ 'apache2' if ansible_os_family == 'Debian' else 'httpd' }}"
+    apache_service_name: "{{ 'apache2' if ansible_os_family == 'Debian' else 'httpd' }}"
+    apache_conf_main_file: "{{ '/etc/apache2/ports.conf' if ansible_os_family == 'Debian' else '/etc/httpd/conf/httpd.conf' }}"
 
-    - name: Configure Apache to listen on port 8080
-      template:
-        src: templates/apache2.conf.j2
-        dest: /etc/apache2/ports.conf
-        owner: root
-        group: root
-        mode: 0644
-      notify: Restart Apache
+  tasks:
+    - name: Instalar el paquete de Apache
+      ansible.builtin.package:
+        name: "{{ apache_package_name }}"
+        state: present
+
+    - name: Asegurar que Apache escucha en el puerto 8080
+      ansible.builtin.lineinfile:
+        path: "{{ apache_conf_main_file }}"
+        regexp: "^Listen 8080$"
+        line: "Listen 8080"
+        state: present
+        insertafter: EOF
+        create: true
+      notify: Reiniciar Apache
+
+    - name: Eliminar o comentar la directiva Listen 80 si existe
+      ansible.builtin.lineinfile:
+        path: "{{ apache_conf_main_file }}"
+        regexp: "^Listen 80$"
+        state: absent
+      notify: Reiniciar Apache
+
+    - name: Configurar VirtualHost predeterminado para el puerto 8080 (Debian/Ubuntu)
+      ansible.builtin.lineinfile:
+        path: "/etc/apache2/sites-available/000-default.conf"
+        regexp: "<VirtualHost \\*:80>"
+        line: "<VirtualHost *:8080>"
+        state: present
+      when: ansible_os_family == 'Debian'
+      notify: Reiniciar Apache
+
+    - name: Asegurar que el servicio Apache esté iniciado y habilitado
+      ansible.builtin.service:
+        name: "{{ apache_service_name }}"
+        state: started
+        enabled: true
 
   handlers:
-    - name: Restart Apache
-      service:
-        name: apache2
+    - name: Reiniciar Apache
+      ansible.builtin.service:
+        name: "{{ apache_service_name }}"
         state: restarted
-```
-```yaml
----
-- name: templates/apache2.conf.j2
-  src: templates/apache2.conf.j2
-  dest: /etc/apache2/ports.conf
-  owner: root
-  group: root
-  mode: 0644
-```
-```yaml
----
-- name: templates/apache2.conf.j2
-  content: |
-    Listen 8080
-    <VirtualHost *:8080>
-        ServerAdmin webmaster@localhost
-        DocumentRoot /var/www/html
-
-        ErrorLog ${APACHE_LOG_DIR}/error.log
-        CustomLog ${APACHE_LOG_DIR}/access.log combined
-    </VirtualHost>
-```
