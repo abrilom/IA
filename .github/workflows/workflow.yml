@@ -1,4 +1,4 @@
-name: Deploy Apache on Port 8080
+name: Deploy Apache with Port 8080
 
 on:
   workflow_dispatch:
@@ -24,7 +24,7 @@ jobs:
       - name: Syntax check Ansible playbook
         run: ansible-playbook --syntax-check ansible/playbook.yml -i ansible/inventario
 
-      - name: Execute Ansible playbook
+      - name: Deploy Apache
         env:
           ANSIBLE_SSH_PASS: ${{ secrets.ANSIBLE_SSH_PASS }}
         run: ansible-playbook ansible/playbook.yml -i ansible/inventario -e "ansible_ssh_pass=$ANSIBLE_SSH_PASS"
