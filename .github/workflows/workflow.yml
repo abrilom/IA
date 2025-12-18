@@ -1,14 +1,14 @@
-name: Ejecutar Playbook Ansible
+name: Deploy Apache with Port 8080
 
 on:
   workflow_dispatch:
 
 jobs:
-  ejecutar_playbook:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout del repositorio
+      - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Instalar Ansible y dependencias
@@ -16,8 +16,8 @@ jobs:
           sudo apt update
           sudo apt install -y ansible
 
-      - name: Syntax Check del Playbook
-        run: ansible-playbook --syntax-check playbook.yml -i inventario
+      - name: Syntax check del playbook
+        run: ansible-playbook --syntax-check root/PracticaFinal/ansible/playbook.yml -i root/PracticaFinal/ansible/inventario
 
-      - name: Ejecutar Playbook Ansible
-        run: ansible-playbook playbook.yml -i inventario
+      - name: Ejecutar playbook de Ansible
+        run: ansible-playbook root/PracticaFinal/ansible/playbook.yml -i root/PracticaFinal/ansible/inventario
