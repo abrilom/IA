@@ -1,0 +1,40 @@
+---
+- name: Install Apache and configure it to listen on port 8080
+  hosts: all
+  become: true
+  tasks:
+    - name: Install Apache
+      apt:
+        name: apache2
+        state: present
+        update_cache: yes
+
+    - name: Configure Apache to listen on port 8080
+      template:
+        src: templates/apache2.conf
+        dest: /etc/apache2/ports.conf
+        owner: root
+        group: root
+        mode: 0644
+      notify: Restart Apache
+
+  handlers:
+    - name: Restart Apache
+      service:
+        name: apache2
+        state: restarted
+```
+```yaml
+---
+- name: templates/apache2.conf
+  content: |
+    Listen 8080
+
+    <VirtualHost *:8080>
+        ServerAdmin webmaster@localhost
+        DocumentRoot /var/www/html
+
+        ErrorLog ${APACHE_LOG_DIR}/error.log
+        CustomLog ${APACHE_LOG_DIR}/access.log combined
+    </VirtualHost>
+```
