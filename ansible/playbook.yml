@@ -11,7 +11,7 @@
 
     - name: Configure Apache to listen on port 8080
       template:
-        src: templates/apache2.conf
+        src: templates/apache2.conf.j2
         dest: /etc/apache2/ports.conf
         owner: root
         group: root
@@ -26,10 +26,18 @@
 ```
 ```yaml
 ---
-- name: templates/apache2.conf
+- name: templates/apache2.conf.j2
+  src: templates/apache2.conf.j2
+  dest: /etc/apache2/ports.conf
+  owner: root
+  group: root
+  mode: 0644
+```
+```yaml
+---
+- name: templates/apache2.conf.j2
   content: |
     Listen 8080
-
     <VirtualHost *:8080>
         ServerAdmin webmaster@localhost
         DocumentRoot /var/www/html
