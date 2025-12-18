@@ -1,4 +1,4 @@
-name: Deploy Apache with Port 8080
+name: Deploy Apache on Port 8080
 
 on:
   workflow_dispatch:
@@ -11,13 +11,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Instalar Ansible y dependencias
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.x'
+
+      - name: Install Ansible and dependencies
         run: |
-          sudo apt update
-          sudo apt install -y ansible
+          pip install ansible
+          pip install ansible-lint
 
-      - name: Syntax check del playbook
-        run: ansible-playbook --syntax-check root/PracticaFinal/ansible/playbook.yml -i root/PracticaFinal/ansible/inventario
+      - name: Syntax check Ansible playbook
+        run: ansible-lint ansible/playbook.yml
 
-      - name: Ejecutar playbook de Ansible
-        run: ansible-playbook root/PracticaFinal/ansible/playbook.yml -i root/PracticaFinal/ansible/inventario
+      - name: Execute Ansible playbook
+        run: |
+          ansible-playbook -i ansible/inventario ansible/playbook.yml
