@@ -19,11 +19,12 @@ jobs:
       - name: Install Ansible and dependencies
         run: |
           pip install ansible
-          pip install ansible-lint
+          pip install sshpass
 
       - name: Syntax check Ansible playbook
-        run: ansible-lint ansible/playbook.yml
+        run: ansible-playbook --syntax-check ansible/playbook.yml -i ansible/inventario
 
       - name: Execute Ansible playbook
-        run: |
-          ansible-playbook -i ansible/inventario ansible/playbook.yml
+        env:
+          ANSIBLE_SSH_PASS: ${{ secrets.ANSIBLE_SSH_PASS }}
+        run: ansible-playbook ansible/playbook.yml -i ansible/inventario -e "ansible_ssh_pass=$ANSIBLE_SSH_PASS"

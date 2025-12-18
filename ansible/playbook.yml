@@ -1,52 +1,70 @@
 ---
-- name: Instalar y configurar Apache en puerto 8080
+- name: Instalar y configurar Apache con puerto 8080
   hosts: all
   become: true
-  vars:
-    apache_package_name: "{{ 'apache2' if ansible_os_family == 'Debian' else 'httpd' }}"
-    apache_service_name: "{{ 'apache2' if ansible_os_family == 'Debian' else 'httpd' }}"
-    apache_conf_main_file: "{{ '/etc/apache2/ports.conf' if ansible_os_family == 'Debian' else '/etc/httpd/conf/httpd.conf' }}"
 
   tasks:
     - name: Instalar el paquete de Apache
       ansible.builtin.package:
-        name: "{{ apache_package_name }}"
+        name: "{{ 'apache2' if ansible_os_family == 'Debian' else 'httpd' }}"
         state: present
 
-    - name: Asegurar que Apache escucha en el puerto 8080
-      ansible.builtin.lineinfile:
-        path: "{{ apache_conf_main_file }}"
-        regexp: "^Listen 8080$"
-        line: "Listen 8080"
-        state: present
-        insertafter: EOF
-        create: true
-      notify: Reiniciar Apache
+    - name: Asegurar que el servicio de Apache esté corriendo y habilitado
+      ansible.builtin.service:
+        name: "{{ 'apache2' if ansible_os_family == 'Debian' else 'httpd' }}"
+        state: started
+        enabled: true
 
-    - name: Eliminar o comentar la directiva Listen 80 si existe
+    - name: Comentar la directiva 'Listen 80' en Debian/Ubuntu
       ansible.builtin.lineinfile:
-        path: "{{ apache_conf_main_file }}"
-        regexp: "^Listen 80$"
-        state: absent
-      notify: Reiniciar Apache
-
-    - name: Configurar VirtualHost predeterminado para el puerto 8080 (Debian/Ubuntu)
-      ansible.builtin.lineinfile:
-        path: "/etc/apache2/sites-available/000-default.conf"
-        regexp: "<VirtualHost \\*:80>"
-        line: "<VirtualHost *:8080>"
+        path: /etc/apache2/ports.conf
+        regexp: '^(Listen)\s+80$'
+        line: '#\1 80'
         state: present
       when: ansible_os_family == 'Debian'
       notify: Reiniciar Apache
 
-    - name: Asegurar que el servicio Apache esté iniciado y habilitado
-      ansible.builtin.service:
-        name: "{{ apache_service_name }}"
-        state: started
-        enabled: true
+    - name: Asegurar que 'Listen 8080' esté presente en Debian/Ubuntu
+      ansible.builtin.lineinfile:
+        path: /etc/apache2/ports.conf
+        regexp: '^Listen\s+8080$'
+        line: 'Listen 8080'
+        state: present
+        insertafter: '^Listen\s+\d+|# Listen 80$'
+      when: ansible_os_family == 'Debian'
+      notify: Reiniciar Apache
+
+    - name: Configurar VirtualHost para usar el puerto 8080 en Debian/Ubuntu
+      ansible.builtin.lineinfile:
+        path: /etc/apache2/ports.conf
+        regexp: '^(\s*<VirtualHost \*):80>$'
+        line: '\1:8080>'
+        backrefs: true
+        state: present
+      when: ansible_os_family == 'Debian'
+      notify: Reiniciar Apache
+
+    - name: Comentar la directiva 'Listen 80' en RedHat/CentOS
+      ansible.builtin.lineinfile:
+        path: /etc/httpd/conf/httpd.conf
+        regexp: '^(Listen)\s+80$'
+        line: '#\1 80'
+        state: present
+      when: ansible_os_family == 'RedHat'
+      notify: Reiniciar Apache
+
+    - name: Asegurar que 'Listen 8080' esté presente en RedHat/CentOS
+      ansible.builtin.lineinfile:
+        path: /etc/httpd/conf/httpd.conf
+        regexp: '^Listen\s+8080$'
+        line: 'Listen 8080'
+        state: present
+        insertafter: '^Listen\s+\d+|# Listen 80$'
+      when: ansible_os_family == 'RedHat'
+      notify: Reiniciar Apache
 
   handlers:
     - name: Reiniciar Apache
       ansible.builtin.service:
-        name: "{{ apache_service_name }}"
+        name: "{{ 'apache2' if ansible_os_family == 'Debian' else 'httpd' }}"
         state: restarted
