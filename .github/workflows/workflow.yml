@@ -1,23 +1,22 @@
-on:
-  workflow_dispatch:
+name: Ansible Playbook Execution
+on: workflow_dispatch
 
 jobs:
-  deploy:
+  run-ansible-playbook:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
 
-      - name: Install dependencies
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Ansible, Ansible Lint, and SSHPass
         run: |
           sudo apt-get update
-          sudo apt-get install -y ansible ansible-lint sshpass
+          sudo apt-get install -y python3-pip sshpass
+          pip install ansible ansible-lint
 
-      - name: Set ANSIBLE_SSH_PASS
-        uses: actions/secrets@v4
-        with:
-          secrets: ANSIBLE_SSH_PASS
+      - name: Perform Ansible Playbook Lint Check
+        run: ansible-lint ansible/playbook.yml
 
-      - name: Run Ansible playbook
-        run: |
-          ansible-playbook -i ansible/inventory ansible/playbook.yml -e "ansible_ssh_pass=${{ secrets.ANSIBLE_SSH_PASS }}" --ssh-extra-args="-o StrictHostKeyChecking=no"
+      - name: Execute Ansible Playbook
+        run: ansible-playbook ansible/playbook.yml -i ansible/inventory -e "ansible_ssh_pass=${{ secrets.ANSIBLE_SSH_PASS }}" --ssh-extra-args='-o StrictHostKeyChecking=no'
