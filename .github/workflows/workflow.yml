@@ -17,14 +17,15 @@ jobs:
           sudo apt-get install -y ansible ansible-lint openssh-client
           sudo apt-get install -y sshpass
 
+      - name: Syntax check Ansible playbook
+        uses: ansible/ansible-lint-action@v4
+
       - name: Configure SSH password
         run: |
           echo "ANSIBLE_SSH_PASS=${{ secrets.ANSIBLE_SSH_PASS }}" > .env
-          echo "ANSIBLE_SSH_PASS=${{ secrets.ANSIBLE_SSH_PASS }}"
+        shell: bash
 
-      - name: Syntax check Ansible playbook
-        run: ansible-playbook --syntax-check ansible/playbook.yml -i ansible/inventory --ssh-extra-args='-o StrictHostKeyChecking=no'
-
-      - name: Execute Ansible playbook
+      - name: Execute Ansible Playbook
         run: |
-          ansible-playbook ansible/playbook.yml -i ansible/inventory -e "ansible_ssh_pass=${{ secrets.ANSIBLE_SSH_PASS }}" --ssh-extra-args='-o StrictHostKeyChecking=no'
+          ansible-playbook -i ansible/inventory ansible/playbook.yml -e "ansible_ssh_pass=$(cat .env | grep ANSIBLE_SSH_PASS | cut -d'=' -f2)" --ssh-extra-args='-o StrictHostKeyChecking=no'
+        working-directory: ./
