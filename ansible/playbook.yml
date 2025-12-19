@@ -1,49 +1,40 @@
+---
 - hosts: all
   become: true
   tasks:
-    - name: Instalar apache2
+    - name: Install Apache
       ansible.builtin.apt:
         name: apache2
         state: present
-        update_cache: yes
 
-    - name: Configurar puerto 8080 en ports.conf
+    - name: Configure Apache to listen on port 8080
       ansible.builtin.lineinfile:
         path: /etc/apache2/ports.conf
-        regexp: '^Listen '
-        line: 'Listen 8080'
+        regexp: '^Listen 880'
+        line: Listen 8080
         owner: root
         group: root
-        mode: '0644'
-        backrefs: yes
-      notify: restarted
+        mode: 0644
+      notify: Restart Apache
 
-    - name: Crear archivo de configuración para VirtualHost en puerto 8080
-      ansible.builtin.copy:
-        dest: /etc/apache2/sites-available/000-default.conf
-        content: |
-          <VirtualHost *:8080>
-              DocumentRoot /var/www/html
-              <Directory /var/www/html>
-                  AllowOverride None
-                  Require all granted
-              </Directory>
-              ErrorLog ${APACHE_LOG_DIR}/error.log
-              CustomLog ${APACHE_LOG_DIR}/access.log combined
-          </VirtualHost>
+    - name: Configure Apache Virtual Host
+      ansible.builtin.lineinfile:
+        path: /etc/apache2/sites-available/000-default.conf
+        regexp: '^<VirtualHost *:80>'
+        line: '<VirtualHost *:8080>'
         owner: root
         group: root
-        mode: '0644'
-      notify: restarted
+        mode: 0644
+      notify: Restart Apache
 
-    - name: Asegurar que el servicio apache2 esté corriendo
-      ansible.builtin.service:
-        name: apache2
-        state: started
-        enabled: yes
+    - name: Enable Apache Virtual Host
+      ansible.builtin.file:
+        src: /etc/apache2/sites-available/000-default.conf
+        dest: /etc/apache2/sites-enabled/000-default.conf
+        state: link
+      notify: Restart Apache
 
-  handlers:
-    - name: restarted
+    - name: Restart Apache
       ansible.builtin.service:
         name: apache2
         state: restarted
