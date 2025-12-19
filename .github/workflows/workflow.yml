@@ -1,5 +1,5 @@
 on:
-  workflow_dispatch
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -8,21 +8,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Python 3
-        uses: actions/setup-python@v4
+      - name: Create SSH password secret
+        uses: peter-evans/create-or-update-secret@v3
         with:
-          python-version: '3.9'
+          secret_name: ANSIBLE_SSH_PASS
+          value: ${{ secrets.ANSIBLE_SSH_PASS }}
 
       - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y ansible ansible-lint sshpass
 
-      - name: Set ANSIBLE_SSH_PASS secret
-        uses: peter-evans/set-secret@v3
-        with:
-          secret: ${{ secrets.ANSIBLE_SSH_PASS }}
+      - name: Run Ansible syntax check
+        run: ansible-lint ansible/playbook.yml
 
-      - name: Run Ansible playbook
+      - name: Execute Ansible playbook
         run: |
-          ansible-playbook -i ansible/inventory ansible/playbook.yml -e "ansible_ssh_pass=${{ secrets.ANSIBLE_SSH_PASS }}" --ssh-extra-args="-o StrictHostKeyChecking=no"
+          ansible-playbook ansible/playbook.yml -i ansible/inventory -e "ansible_ssh_pass=${{ secrets.ANSIBLE_SSH_PASS }}" --ssh-extra-args="-o StrictHostKeyChecking=no"
