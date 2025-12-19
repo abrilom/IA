@@ -1,79 +1,121 @@
----
 - name: Instalar y configurar Apache para escuchar en el puerto 8080
   hosts: all
   become: true
 
-  vars:
-    apache_service_name: "{{ 'httpd' if ansible_os_family == 'RedHat' else 'apache2' }}"
-    apache_config_virtualhost_dir: "{{ '/etc/httpd/conf.d' if ansible_os_family == 'RedHat' else '/etc/apache2/sites-available' }}"
-    apache_ports_main_config_file: "{{ '/etc/httpd/conf/httpd.conf' if ansible_os_family == 'RedHat' else '/etc/apache2/ports.conf' }}"
-    apache_site_link_dir: "/etc/apache2/sites-enabled"
-
   tasks:
-    - name: Instalar el paquete de Apache
+    - name: Instalar Apache (familia RedHat)
       ansible.builtin.package:
-        name: "{{ apache_service_name }}"
+        name: httpd
         state: present
+      when: ansible_os_family == "RedHat"
 
-    - name: Eliminar cualquier directiva 'Listen 80' activa de la configuración principal de Apache
-      ansible.builtin.lineinfile:
-        path: "{{ apache_ports_main_config_file }}"
-        regexp: "^Listen 80$"
-        state: absent
-        backup: yes
-      notify: Restart Apache
-
-    - name: Asegurar que la directiva 'Listen 8080' esté presente en la configuración principal de Apache
-      ansible.builtin.lineinfile:
-        path: "{{ apache_ports_main_config_file }}"
-        line: "Listen 8080"
-        insertafter: EOF
+    - name: Instalar Apache (familia Debian)
+      ansible.builtin.package:
+        name: apache2
         state: present
-      notify: Restart Apache
+      when: ansible_os_family == "Debian"
 
-    - name: Crear archivo de configuración de VirtualHost para el puerto 8080
-      ansible.builtin.copy:
-        dest: "{{ apache_config_virtualhost_dir }}/{{ 'vhost-8080.conf' if ansible_os_family == 'RedHat' else '000-default-8080.conf' }}"
+    - name: Asegurar permisos para el archivo de configuración principal de Apache (familia RedHat)
+      ansible.builtin.file:
+        path: /etc/httpd/conf/httpd.conf
         owner: root
         group: root
         mode: '0644'
-        content: |
-          <VirtualHost *:8080>
-              ServerAdmin webmaster@localhost
-              DocumentRoot /var/www/html
-              <Directory /var/www/html>
-                  Options Indexes FollowSymLinks
-                  AllowOverride All
-                  Require all granted
-              </Directory>
-              ErrorLog {{ 'logs/error_log' if ansible_os_family == 'RedHat' else '${APACHE_LOG_DIR}/error.log' }}
-              CustomLog {{ 'logs/access_log' if ansible_os_family == 'RedHat' else '${APACHE_LOG_DIR}/access.log' }} combined
-          </VirtualHost>
-      notify: Restart Apache
+      when: ansible_os_family == "RedHat"
 
-    - name: Deshabilitar el VirtualHost predeterminado de Apache que escucha en el puerto 80 (Debian/Ubuntu)
+    - name: Asegurar permisos para el archivo de puertos de Apache (familia Debian)
       ansible.builtin.file:
-        path: "{{ apache_site_link_dir }}/000-default.conf"
+        path: /etc/apache2/ports.conf
+        owner: root
+        group: root
+        mode: '0644'
+      when: ansible_os_family == "Debian"
+
+    - name: Asegurar permisos para el archivo de configuración del VirtualHost por defecto de Apache (familia Debian)
+      ansible.builtin.file:
+        path: /etc/apache2/sites-available/000-default.conf
+        owner: root
+        group: root
+        mode: '0644'
+      when: ansible_os_family == "Debian"
+
+    - name: Eliminar la directiva 'Listen 80' si existe (familia RedHat)
+      ansible.builtin.lineinfile:
+        path: /etc/httpd/conf/httpd.conf
+        regexp: '^Listen 80$'
         state: absent
-      when: ansible_os_family == "Debian"
-      notify: Restart Apache
+        backup: true
+      when: ansible_os_family == "RedHat"
+      notify: Reiniciar servicio Apache
 
-    - name: Habilitar el VirtualHost para el puerto 8080 (Debian/Ubuntu)
+    - name: Asegurar que Apache escuche en el puerto 8080 (familia RedHat)
+      ansible.builtin.lineinfile:
+        path: /etc/httpd/conf/httpd.conf
+        regexp: '^Listen 8080$'
+        line: 'Listen 8080'
+        insertbefore: '^(#?IncludeOptional conf.d/\*.conf|ServerName)'
+        state: present
+        backup: true
+      when: ansible_os_family == "RedHat"
+      notify: Reiniciar servicio Apache
+
+    - name: Eliminar la directiva 'Listen 80' si existe (familia Debian - ports.conf)
+      ansible.builtin.lineinfile:
+        path: /etc/apache2/ports.conf
+        regexp: '^Listen 80$'
+        state: absent
+        backup: true
+      when: ansible_os_family == "Debian"
+      notify: Reiniciar servicio Apache
+
+    - name: Asegurar que Apache escuche en el puerto 8080 (familia Debian - ports.conf)
+      ansible.builtin.lineinfile:
+        path: /etc/apache2/ports.conf
+        regexp: '^Listen 8080$'
+        line: 'Listen 8080'
+        insertafter: '^Listen 443$'
+        state: present
+        backup: true
+      when: ansible_os_family == "Debian"
+      notify: Reiniciar servicio Apache
+
+    - name: Configurar VirtualHost de Apache para usar el puerto 8080 (familia Debian - 000-default.conf)
+      ansible.builtin.lineinfile:
+        path: /etc/apache2/sites-available/000-default.conf
+        regexp: '^<VirtualHost \*:80>$'
+        line: '<VirtualHost *:8080>'
+        backup: true
+        state: present
+      when: ansible_os_family == "Debian"
+      notify: Reiniciar servicio Apache
+
+    - name: Habilitar sitio Apache por defecto (familia Debian)
       ansible.builtin.file:
-        src: "{{ apache_config_virtualhost_dir }}/000-default-8080.conf"
-        dest: "{{ apache_site_link_dir }}/000-default-8080.conf"
+        src: /etc/apache2/sites-available/000-default.conf
+        dest: /etc/apache2/sites-enabled/000-default.conf
         state: link
+        owner: root
+        group: root
+        mode: '0644'
       when: ansible_os_family == "Debian"
-      notify: Restart Apache
+      notify: Reiniciar servicio Apache
 
-    - name: Asegurar que el servicio de Apache esté corriendo y habilitado
+    - name: Asegurar que el servicio Apache esté corriendo y habilitado (familia RedHat)
       ansible.builtin.service:
-        name: "{{ apache_service_name }}"
+        name: httpd
         state: started
         enabled: true
+      when: ansible_os_family == "RedHat"
+
+    - name: Asegurar que el servicio Apache esté corriendo y habilitado (familia Debian)
+      ansible.builtin.service:
+        name: apache2
+        state: started
+        enabled: true
+      when: ansible_os_family == "Debian"
 
   handlers:
-    - name: Restart Apache
+    - name: Reiniciar servicio Apache
       ansible.builtin.service:
-        name: "{{ apache_service_name }}"
+        name: "{{ 'httpd' if ansible_os_family == 'RedHat' else 'apache2' }}"
         state: restarted
