@@ -1,33 +1,27 @@
-name: Ansible Playbook Deployment
-
 on:
   workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    env:
-      ANSIBLE_SSH_PASS: ${{ secrets.ANSIBLE_SSH_PASS }}
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
-      - name: Set up Python 3
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'
 
       - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y ansible ansible-lint sshpass
           sudo apt-get install -y python3-pip
-          pip3 install --upgrade pip
-          pip3 install --upgrade ansible-lint
+          sudo pip3 install --upgrade pip
+          sudo pip3 install --upgrade ansible-lint
 
-      - name: Run Ansible Playbook
+      - name: Set ANSIBLE_SSH_PASS secret
+        uses: peter-evans/set-secret@v1
+        with:
+          secret_name: ANSIBLE_SSH_PASS
+          value: ${{ secrets.ANSIBLE_SSH_PASS }}
+
+      - name: Run Ansible playbook
         run: |
-          ansible-playbook -i ./ansible/inventory ansible/playbook.yml \
-            -e "ansible_ssh_pass=${ANSIBLE_SSH_PASS}" \
-            --ssh-extra-args="-o StrictHostKeyChecking=no"
+          ansible-playbook -i ./ansible/inventory ./ansible/playbook.yml -e "ansible_ssh_pass=${{ secrets.ANSIBLE_SSH_PASS }}" --ssh-extra-args="-o StrictHostKeyChecking=no"

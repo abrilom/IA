@@ -1,38 +1,49 @@
----
 - hosts: all
   become: true
   tasks:
-    - name: Install Apache
+    - name: Instalar apache2
       ansible.builtin.apt:
         name: apache2
         state: present
+        update_cache: yes
 
-    - name: Configure Apache for port 8080
+    - name: Configurar puerto 8080 en ports.conf
       ansible.builtin.lineinfile:
         path: /etc/apache2/ports.conf
-        regexp: '^#Listen 80'
+        regexp: '^Listen '
         line: 'Listen 8080'
-        state: present
-      notify: Restart Apache
-
-    - name: Configure VirtualHost
-      ansible.builtin.template:
-        src: templates/virtualhost.conf.j2
-        dest: /etc/apache2/sites-available/000-default.conf
         owner: root
         group: root
-        mode: 0644
-      notify: Restart Apache
+        mode: '0644'
+        backrefs: yes
+      notify: restarted
 
-    - name: Enable VirtualHost
-      ansible.builtin.file:
-        src: /etc/apache2/sites-available/000-default.conf
-        dest: /etc/apache2/sites-enabled/000-default.conf
-        state: link
-      notify: Restart Apache
+    - name: Crear archivo de configuración para VirtualHost en puerto 8080
+      ansible.builtin.copy:
+        dest: /etc/apache2/sites-available/000-default.conf
+        content: |
+          <VirtualHost *:8080>
+              DocumentRoot /var/www/html
+              <Directory /var/www/html>
+                  AllowOverride None
+                  Require all granted
+              </Directory>
+              ErrorLog ${APACHE_LOG_DIR}/error.log
+              CustomLog ${APACHE_LOG_DIR}/access.log combined
+          </VirtualHost>
+        owner: root
+        group: root
+        mode: '0644'
+      notify: restarted
 
-    - name: Restart Apache
+    - name: Asegurar que el servicio apache2 esté corriendo
+      ansible.builtin.service:
+        name: apache2
+        state: started
+        enabled: yes
+
+  handlers:
+    - name: restarted
       ansible.builtin.service:
         name: apache2
         state: restarted
-      listen:
