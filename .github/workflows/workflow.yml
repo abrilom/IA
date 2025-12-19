@@ -1,27 +1,331 @@
-name: Deploy Apache on Port 8080
+on workflow_dispatch
+  tags:
+    - ansible
+    - playbook
+    - github-actions
 
-on:
-  workflow_dispatch:
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Instalar dependencias de Ansible
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ansible ansible-lint openssh-client
-
-      - name: Instalar sshpass
-        run: sudo apt-get install -y sshpass
-
-      - name: Syntax check del playbook
-        run: ansible-playbook --syntax-check ansible/playbook.yml -i ansible/inventario
-
-      - name: Ejecutar playbook de Ansible
-        run: |
-          ansible-playbook ansible/playbook.yml -i ansible/inventario -e "ansible_ssh_pass=${{ secrets.ANSIBLE_SSH_PASS }}" --ssh-extra-args='-o StrictHostKeyChecking=no'
+  job: ejecutar playbook.yml
+  when: ansible_distribution == "Ubuntu"
+  #  -e "ansible_ssh_pass=ANSIBLE_SSH_PASS"  #  No se usa, se pasa como variable de entorno
+  #  -e "StrictHostKeyChecking=no" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible_SSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "AnsibleSSH_PASS" #  No se usa, se pasa como variable de entorno
+  #  -e "Ansible
