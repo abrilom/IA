@@ -15,26 +15,3 @@
         owner: root
         group: root
         mode: 0644
-      notify: Restart Apache
-
-    - name: Configure Apache Virtual Host
-      ansible.builtin.lineinfile:
-        path: /etc/apache2/sites-available/000-default.conf
-        regexp: '^<VirtualHost *:80>'
-        line: '<VirtualHost *:8080>'
-        owner: root
-        group: root
-        mode: 0644
-      notify: Restart Apache
-
-    - name: Enable Apache Virtual Host
-      ansible.builtin.file:
-        src: /etc/apache2/sites-available/000-default.conf
-        dest: /etc/apache2/sites-enabled/000-default.conf
-        state: link
-      notify: Restart Apache
-
-    - name: Restart Apache
-      ansible.builtin.service:
-        name: apache2
-        state: restarted
