@@ -6,38 +6,33 @@
       ansible.builtin.apt:
         name: apache2
         state: present
-        update_cache: yes
 
     - name: Configure Apache for port 8080
-      ansible.builtin.copy:
-        dest: /etc/apache2/ports.conf
-        content: "Listen 8080"
-        owner: root
-        group: root
-        mode: 0644
-
-    - name: Configure Apache for port 8080 (Virtual Host)
-      ansible.builtin.copy:
-        dest: /etc/apache2/sites-available/000-default.conf
-        content: |
-          <VirtualHost *:8080>
-              ServerAdmin webmaster@localhost
-              DocumentRoot /var/www/html
-              ServerName localhost
-              ServerAlias localhost
-              ErrorLog ${APACHE_LOG_DIR}/error.log
-              CustomLog ${APACHE_LOG_DIR}/access.log combined
-          </VirtualHost>
-        owner: root
-        group: root
-        mode: 0644
-
-    - name: Enable Apache site
-      ansible.builtin.a2ensite:
-        name: 000-default.conf
+      ansible.builtin.lineinfile:
+        path: /etc/apache2/ports.conf
+        regexp: '^#Listen 80'
+        line: 'Listen 8080'
         state: present
+      notify: Restart Apache
+
+    - name: Configure VirtualHost
+      ansible.builtin.template:
+        src: templates/virtualhost.conf.j2
+        dest: /etc/apache2/sites-available/000-default.conf
+        owner: root
+        group: root
+        mode: 0644
+      notify: Restart Apache
+
+    - name: Enable VirtualHost
+      ansible.builtin.file:
+        src: /etc/apache2/sites-available/000-default.conf
+        dest: /etc/apache2/sites-enabled/000-default.conf
+        state: link
+      notify: Restart Apache
 
     - name: Restart Apache
       ansible.builtin.service:
         name: apache2
         state: restarted
+      listen:
