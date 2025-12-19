@@ -22,10 +22,11 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y ansible ansible-lint sshpass
-          sudo apt-get install -y python3-pip
-          pip3 install --upgrade pip
-          pip3 install --upgrade pipenv
+          pip install --upgrade pip
+          pip install --upgrade pipenv
 
       - name: Run Ansible Playbook
         run: |
-          ansible-playbook -i inventory playbook.yml -e "ansible_ssh_pass=${ANSIBLE_SSH_PASS}" --ssh-extra-args="-o StrictHostKeyChecking=no"
+          ansible-playbook -i inventory playbook.yml \
+            -e "ansible_ssh_pass=${ANSIBLE_SSH_PASS}" \
+            --ssh-extra-args="-o StrictHostKeyChecking=no"
