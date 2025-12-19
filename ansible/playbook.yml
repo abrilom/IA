@@ -3,53 +3,32 @@
   become: true
   tasks:
     - name: Install Apache
-      apt:
+      ansible.builtin.apt:
         name: apache2
         state: present
         update_cache: yes
 
-    - name: Ensure Apache is running
-      service:
-        name: apache2
-        state: started
-        enabled: yes
-
     - name: Configure Apache to listen on port 8080
-      lineinfile:
+      ansible.builtin.lineinfile:
         path: /etc/apache2/ports.conf
         regexp: '^Listen 80'
-        line: 'Listen 8080'
+        line: Listen 8080
         state: present
-        owner: root
-        group: root
-        mode: 0644
 
-    - name: Configure Apache virtual host
-      copy:
+    - name: Configure Apache to listen on port 8080 (VirtualHost)
+      ansible.builtin.template:
+        src: templates/apache2.conf.j2
         dest: /etc/apache2/sites-available/000-default.conf
-        content: |
-          <VirtualHost *:8080>
-              ServerAdmin webmaster@localhost
-              DocumentRoot /var/www/html
-              ServerName yourdomain.com
-              ServerAlias www.yourdomain.com
-              ErrorLog ${APACHE_LOG_DIR}/error.log
-              CustomLog ${APACHE_LOG_DIR}/access.log combined
-          </VirtualHost>
         owner: root
         group: root
         mode: 0644
 
-    - name: Enable the default site
-      file:
-        src: /etc/apache2/sites-available/000-default.conf
-        dest: /etc/apache2/sites-enabled/000-default.conf
-        state: link
-      notify:
-        - Restart Apache
+    - name: Enable Apache site
+      ansible.builtin.a2ensite:
+        name: 000-default.conf
+        state: present
 
-  handlers:
     - name: Restart Apache
-      service:
+      ansible.builtin.service:
         name: apache2
         state: restarted
