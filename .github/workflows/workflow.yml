@@ -1,4 +1,4 @@
-name: Deploy Apache with Port 8080
+name: Deploy Apache on Port 8080
 
 on:
   workflow_dispatch:
@@ -11,20 +11,23 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v3
-        with:
-          python-version: '3.x'
+      - name: Set up Ansible
+        uses: technetiumdev/actions/setup-ansible@v1
 
-      - name: Install Ansible and dependencies
+      - name: Install dependencies
         run: |
-          pip install ansible
-          pip install sshpass
+          sudo apt-get update
+          sudo apt-get install -y python3 python3-pip
+          pip3 install ansible
+
+      - name: Install sshpass
+        run: sudo apt-get install -y sshpass
 
       - name: Syntax check Ansible playbook
-        run: ansible-playbook --syntax-check ansible/playbook.yml -i ansible/inventario
+        run: ansible-playbook --syntax-check ansible/playbook.yml -i ansible/inventory
 
-      - name: Deploy Apache
+      - name: Execute Ansible playbook
         env:
           ANSIBLE_SSH_PASS: ${{ secrets.ANSIBLE_SSH_PASS }}
-        run: ansible-playbook ansible/playbook.yml -i ansible/inventario -e "ansible_ssh_pass=$ANSIBLE_SSH_PASS"
+        run: |
+          ansible-playbook ansible/playbook.yml -i ansible/inventory -e "ansible_ssh_pass=$ANSIBLE_SSH_PASS"

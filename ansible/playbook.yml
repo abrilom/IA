@@ -1,37 +1,92 @@
-- name: Instalar y configurar Apache para escuchar en el puerto 8080
+- name: Instalar y configurar Apache en puerto 8080
   hosts: all
   become: true
+  vars:
+    apache_package_name: "{{ 'httpd' if ansible_os_family == 'RedHat' else 'apache2' }}"
+    apache_service_name: "{{ 'httpd' if ansible_os_family == 'RedHat' else 'apache2' }}"
+    apache_main_config_dir: "{{ '/etc/httpd' if ansible_os_family == 'RedHat' else '/etc/apache2' }}"
+    apache_conf_d_dir: "{{ '/etc/httpd/conf.d' if ansible_os_family == 'RedHat' else '/etc/apache2/conf-available' }}"
+    apache_main_ports_config_file: "{{ '/etc/httpd/conf/httpd.conf' if ansible_os_family == 'RedHat' else '/etc/apache2/ports.conf' }}"
+    apache_document_root: "/var/www/html"
+    apache_log_dir: "{{ '/var/log/httpd' if ansible_os_family == 'RedHat' else '/var/log/apache2' }}"
   tasks:
-    - name: Asegurarse de que el paquete Apache (apache2) está instalado
-      ansible.builtin.apt:
-        name: apache2
+    - name: Instalar el paquete Apache
+      ansible.builtin.package:
+        name: "{{ apache_package_name }}"
         state: present
-        update_cache: yes
 
-    - name: Configurar Apache para escuchar en el puerto 8080 en ports.conf
-      ansible.builtin.lineinfile:
-        path: /etc/apache2/ports.conf
-        regexp: '^Listen 80$'
-        line: 'Listen 8080'
-        backup: yes
-      notify: Recargar Apache
-
-    - name: Configurar el VirtualHost por defecto para el puerto 8080
-      ansible.builtin.lineinfile:
-        path: /etc/apache2/sites-available/000-default.conf
-        regexp: '^<VirtualHost \*:80>$'
-        line: '<VirtualHost *:8080>'
-        backup: yes
-      notify: Recargar Apache
-
-    - name: Asegurarse de que el servicio Apache (apache2) está iniciado y habilitado
-      ansible.builtin.systemd:
-        name: apache2
+    - name: Asegurar que el servicio Apache esté iniciado y habilitado
+      ansible.builtin.service:
+        name: "{{ apache_service_name }}"
         state: started
-        enabled: yes
+        enabled: true
+
+    - name: Eliminar la directiva 'Listen 80' del archivo de configuración principal si existe
+      ansible.builtin.lineinfile:
+        path: "{{ apache_main_ports_config_file }}"
+        regexp: '^Listen 80$'
+        state: absent
+        backup: true
+      notify: Reiniciar Apache
+
+    - name: Crear archivo de configuración para el puerto 8080
+      ansible.builtin.copy:
+        dest: "{{ apache_conf_d_dir }}/8080_listen.conf"
+        content: |
+          Listen 8080
+          <VirtualHost *:8080>
+              ServerAdmin webmaster@localhost
+              DocumentRoot {{ apache_document_root }}
+              ErrorLog {{ apache_log_dir }}/error_8080.log
+              CustomLog {{ apache_log_dir }}/access_8080.log combined
+              <Directory {{ apache_document_root }}>
+                  AllowOverride All
+                  Require all granted
+              </Directory>
+          </VirtualHost>
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Reiniciar Apache
+
+    - name: Habilitar el archivo de configuración del puerto 8080 (solo para Debian/Ubuntu)
+      ansible.builtin.file:
+        src: "{{ apache_conf_d_dir }}/8080_listen.conf"
+        dest: "{{ apache_main_config_dir }}/conf-enabled/8080_listen.conf"
+        state: link
+        owner: root
+        group: root
+        mode: '0644'
+      when: ansible_os_family == "Debian"
+      notify: Reiniciar Apache
+
+    - name: Crear un archivo index.html simple en el DocumentRoot
+      ansible.builtin.copy:
+        dest: "{{ apache_document_root }}/index.html"
+        content: |
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <title>Bienvenido!</title>
+              <style>
+                  body { font-family: sans-serif; text-align: center; margin-top: 50px; }
+                  h1 { color: #333; }
+                  p { color: #666; }
+              </style>
+          </head>
+          <body>
+              <h1>¡Hola desde Apache en el puerto 8080!</h1>
+              <p>Servidor web instalado y configurado correctamente por Ansible.</p>
+              <p>Este es un mensaje de prueba.</p>
+          </body>
+          </html>
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Reiniciar Apache
 
   handlers:
-    - name: Recargar Apache
-      ansible.builtin.systemd:
-        name: apache2
-        state: reloaded
+    - name: Reiniciar Apache
+      ansible.builtin.service:
+        name: "{{ apache_service_name }}"
+        state: restarted
