@@ -1,54 +1,32 @@
 ---
-- name: Instalar y configurar Apache con puerto personalizado
-  hosts: your_ubuntu_servers
+- hosts: all
   become: true
   tasks:
-    - name: Actualizar cache de apt
-      ansible.builtin.apt:
-        update_cache: true
+    - name: Update apt cache
+      apt:
+        update_cache: yes
 
-    - name: Instalar Apache2
-      ansible.builtin.apt:
+    - name: Install Apache
+      apt:
         name: apache2
         state: present
 
-    - name: Crear archivo de configuración de Apache para el puerto 8080
-      ansible.builtin.template:
-        src: templates/apache_port_8080.conf.j2
-        dest: /etc/apache2/sites-available/000-default.conf
+    - name: Create Apache configuration file
+      template:
+        src: templates/apache.conf.j2
+        dest: /etc/apache2/ports.conf
         owner: root
         group: root
-        mode: '0644'
-      notify: Reiniciar Apache
+        mode: 0644
 
-    - name: Habilitar el sitio configurado
-      ansible.builtin.command: a2ensite 000-default.conf
-      args:
-        creates: /etc/apache2/sites-enabled/000-default.conf
-      notify: Reiniciar Apache
+    - name: Enable Apache configuration
+      lineinfile:
+        path: /etc/apache2/ports.conf
+        regexp: '^#Listen 80$'
+        line: 'Listen 8080'
+        state: present
 
-    - name: Validar configuración de Apache
-      ansible.builtin.command: apache2ctl configtest
-      register: apache_config_test
-      changed_when: false # Esta tarea no debe marcarse como cambiada
-
-    - name: Fallar si la configuración de Apache es inválida
-      ansible.builtin.fail:
-        msg: "La configuración de Apache es inválida. Revise el error: {{ apache_config_test.stdout }}"
-      when: "'Syntax OK' not in apache_config_test.stdout"
-
-  handlers:
-    - name: Reiniciar Apache
-      ansible.builtin.service:
+    - name: Restart Apache service
+      service:
         name: apache2
         state: restarted
-```
-```yaml
-# templates/apache_port_8080.conf.j2
-<VirtualHost *:8080>
-    ServerAdmin webmaster@localhost
-    DocumentRoot /var/www/html
-
-    ErrorLog ${APACHE_LOG_DIR}/error.log
-    CustomLog ${APACHE_LOG_DIR}/access.log combined
-</VirtualHost>
