@@ -13,20 +13,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Python 3
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'
-
       - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y ansible ansible-lint sshpass
-          pip3 install --upgrade pip
-          pip3 install --upgrade pipenv
 
       - name: Run Ansible Playbook
         run: |
-          ansible-playbook -i ./ansible/inventory ansible/playbook.yml \
+          ansible-playbook -i ./ansible/inventory ./ansible/playbook.yml \
             -e "ansible_ssh_pass=${ANSIBLE_SSH_PASS}" \
-            --ssh-extra-args="-o StrictHostKeyChecking=no"
+            --ssh-extra-args='-o StrictHostKeyChecking=no'
