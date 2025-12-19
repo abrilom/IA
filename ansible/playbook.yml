@@ -1,70 +1,54 @@
 ---
-- name: Instalar y configurar Apache en Ubuntu con puerto 8080
-  hosts: all
+- name: Instalar y configurar Apache con puerto personalizado
+  hosts: your_ubuntu_servers
   become: true
-
   tasks:
-    - name: Actualizar el índice de paquetes apt
+    - name: Actualizar cache de apt
       ansible.builtin.apt:
         update_cache: true
 
-    - name: Instalar el paquete apache2
+    - name: Instalar Apache2
       ansible.builtin.apt:
         name: apache2
         state: present
 
     - name: Crear archivo de configuración de Apache para el puerto 8080
       ansible.builtin.template:
-        src: templates/apache_8080.conf.j2
-        dest: /etc/apache2/sites-available/000-default_8080.conf
+        src: templates/apache_port_8080.conf.j2
+        dest: /etc/apache2/sites-available/000-default.conf
         owner: root
         group: root
         mode: '0644'
-      notify:
-        - Validar y Reiniciar Apache
+      notify: Reiniciar Apache
 
-    - name: Habilitar el sitio de Apache para el puerto 8080
-      ansible.builtin.command: a2ensite 000-default_8080.conf
+    - name: Habilitar el sitio configurado
+      ansible.builtin.command: a2ensite 000-default.conf
       args:
-        creates: /etc/apache2/sites-enabled/000-default_8080.conf
-      notify:
-        - Validar y Reiniciar Apache
+        creates: /etc/apache2/sites-enabled/000-default.conf
+      notify: Reiniciar Apache
 
-    - name: Deshabilitar el sitio de Apache por defecto (puerto 80)
-      ansible.builtin.command: a2dissite 000-default.conf
-      args:
-        removes: /etc/apache2/sites-enabled/000-default.conf
-      notify:
-        - Validar y Reiniciar Apache
+    - name: Validar configuración de Apache
+      ansible.builtin.command: apache2ctl configtest
+      register: apache_config_test
+      changed_when: false # Esta tarea no debe marcarse como cambiada
+
+    - name: Fallar si la configuración de Apache es inválida
+      ansible.builtin.fail:
+        msg: "La configuración de Apache es inválida. Revise el error: {{ apache_config_test.stdout }}"
+      when: "'Syntax OK' not in apache_config_test.stdout"
 
   handlers:
-    - name: Validar y Reiniciar Apache
-      listen: Validar y Reiniciar Apache
-      block:
-        - name: Validar la configuración de Apache
-          ansible.builtin.command: apache2ctl configtest
-          register: apache_config_test
-          changed_when: false
-          failed_when: apache_config_test.rc != 0
-
-        - name: Reiniciar el servicio apache2
-          ansible.builtin.service:
-            name: apache2
-            state: restarted
+    - name: Reiniciar Apache
+      ansible.builtin.service:
+        name: apache2
+        state: restarted
 ```
-
 ```yaml
-# templates/apache_8080.conf.j2
+# templates/apache_port_8080.conf.j2
 <VirtualHost *:8080>
     ServerAdmin webmaster@localhost
     DocumentRoot /var/www/html
 
-    ErrorLog ${APACHE_LOG_DIR}/error_log
-    CustomLog ${APACHE_LOG_DIR}/access_log combined
-
-    <Directory /var/www/html>
-        Options Indexes FollowSymLinks
-        AllowOverride None
-        Require all granted
-    </Directory>
+    ErrorLog ${APACHE_LOG_DIR}/error.log
+    CustomLog ${APACHE_LOG_DIR}/access.log combined
 </VirtualHost>
