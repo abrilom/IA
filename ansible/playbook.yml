@@ -3,7 +3,7 @@
   hosts: all
   become: true
   tasks:
-    - name: Install Apache
+    - name: Install Apache package
       ansible.builtin.apt:
         name: apache2
         state: present
@@ -18,18 +18,17 @@
         mode: '0644'
         state: present
 
-    - name: Configure Apache to listen on port 8080 (VirtualHost)
+    - name: Configure Apache to listen on IP 165.232.123.212
       ansible.builtin.lineinfile:
-        path: /etc/apache2/sites-available/000-default.conf
-        regexp: '^<VirtualHost *:80>'
-        line: '<VirtualHost *:8080>'
+        path: /etc/apache2/ports.conf
+        regexp: '^Listen 165\.232\.123\.212'
+        line: Listen 165.232.123.212
         owner: root
         group: root
         mode: '0644'
         state: present
 
-    - name: Enable Apache
-      ansible.builtin.systemd:
+    - name: Restart Apache service
+      ansible.builtin.service:
         name: apache2
-        state: started
-        enabled: yes
+        state: restarted
