@@ -1,5 +1,6 @@
 ---
-- hosts: all
+- name: Install Apache
+  hosts: all
   become: true
   tasks:
     - name: Install Apache
@@ -14,4 +15,21 @@
         line: Listen 8080
         owner: root
         group: root
-        mode: 0644
+        mode: '0644'
+        state: present
+
+    - name: Configure Apache to listen on port 8080 (VirtualHost)
+      ansible.builtin.lineinfile:
+        path: /etc/apache2/sites-available/000-default.conf
+        regexp: '^<VirtualHost *:80>'
+        line: '<VirtualHost *:8080>'
+        owner: root
+        group: root
+        mode: '0644'
+        state: present
+
+    - name: Enable Apache
+      ansible.builtin.systemd:
+        name: apache2
+        state: started
+        enabled: yes
