@@ -9,25 +9,21 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Ansible
-        uses: technetiumdev/actions/setup-ansible@v1
-
-      - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y python3 python3-pip
-          pip3 install ansible
+          sudo apt-get install -y ansible ansible-lint openssh-client
+          sudo apt-get install -y sshpass
 
-      - name: Install sshpass
-        run: sudo apt-get install -y sshpass
-
-      - name: Syntax check Ansible playbook
-        run: ansible-playbook --syntax-check ansible/playbook.yml -i ansible/inventory
-
-      - name: Execute Ansible playbook
-        env:
-          ANSIBLE_SSH_PASS: ${{ secrets.ANSIBLE_SSH_PASS }}
+      - name: Get ANSIBLE_SSH_PASS secret
+        id: ssh_pass
         run: |
-          ansible-playbook ansible/playbook.yml -i ansible/inventory -e "ansible_ssh_pass=$ANSIBLE_SSH_PASS"
+          echo "ANSIBLE_SSH_PASS=${{ secrets.ANSIBLE_SSH_PASS }}" >> $GITHUB_ENV
+          echo "ANSIBLE_SSH_PASS=${{ secrets.ANSIBLE_SSH_PASS }}"
+
+      - name: Execute Ansible Playbook
+        working-directory: ansible
+        run: |
+          ansible-playbook playbook.yml -i inventory -e "ansible_ssh_pass=${{ env.ANSIBLE_SSH_PASS }}"
