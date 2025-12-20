@@ -1,53 +1,72 @@
-- name: Instalar Apache y configurar puerto 8080
+- name: Install and configure Apache2 on port 8080
   hosts: all
   become: true
   tasks:
-    - name: 1. Instalar el paquete apache2
+    - name: 1. Install Apache2 package
       ansible.builtin.apt:
         name: apache2
         state: present
         update_cache: yes
 
-    - name: 2.1. Asegurar que 'Listen 80' esté comentado en ports.conf
+    - name: Ensure Apache2 service is started and enabled (initial check/start)
+      ansible.builtin.service:
+        name: apache2
+        state: started
+        enabled: true
+
+    - name: 2. Configure Apache to listen on port 8080 - Remove Listen 80 directive
       ansible.builtin.lineinfile:
         path: /etc/apache2/ports.conf
         regexp: '^Listen 80$'
-        line: '#Listen 80'
-        state: present
-      notify: restart apache
+        state: absent
+        backup: yes
+      notify: Restart apache2
 
-    - name: 2.2. Asegurar que 'Listen 8080' esté presente en ports.conf
+    - name: 2. Configure Apache to listen on port 8080 - Add Listen 8080 directive
       ansible.builtin.lineinfile:
         path: /etc/apache2/ports.conf
         regexp: '^Listen 8080$'
         line: 'Listen 8080'
         state: present
-      notify: restart apache
+        insertafter: '^(Listen 443|Listen\s)' # Insert after Listen 443 or any other Listen directive
+      notify: Restart apache2
 
-    - name: 2.3. Configurar VirtualHost por defecto para el puerto 8080
-      ansible.builtin.lineinfile:
-        path: /etc/apache2/sites-available/000-default.conf
-        regexp: '^<VirtualHost \*:80>$'
-        line: '<VirtualHost *:8080>'
-        state: present
-      notify: restart apache
-
-    - name: 2.4. Establecer owner, group y modo 0644 para 000-default.conf
-      ansible.builtin.file:
-        path: /etc/apache2/sites-available/000-default.conf
+    - name: 2. Configure Apache default virtual host for port 8080
+      ansible.builtin.copy:
+        dest: /etc/apache2/sites-available/000-default.conf
+        content: |
+          <VirtualHost *:8080>
+              ServerAdmin webmaster@localhost
+              DocumentRoot /var/www/html
+              ErrorLog ${APACHE_LOG_DIR}/error.log
+              CustomLog ${APACHE_LOG_DIR}/access.log combined
+              <Directory /var/www/html>
+                  Options Indexes FollowSymLinks
+                  AllowOverride None
+                  Require all granted
+              </Directory>
+          </VirtualHost>
         owner: root
         group: root
         mode: '0644'
+      notify: Restart apache2
 
-    - name: 3. Comprobar que el servicio apache2 esté corriendo y habilitado
-      ansible.builtin.systemd:
+    - name: 2. Enable the default virtual host for port 8080 by creating a symlink
+      ansible.builtin.file:
+        src: /etc/apache2/sites-available/000-default.conf
+        dest: /etc/apache2/sites-enabled/000-default.conf
+        state: link
+        force: true
+      notify: Restart apache2
+
+    - name: 3. Comprobar que el servicio este corriendo y habilitado
+      ansible.builtin.service:
         name: apache2
         state: started
         enabled: true
 
   handlers:
-    - name: restart apache
-      ansible.builtin.systemd:
+    - name: Restart apache2
+      ansible.builtin.service:
         name: apache2
         state: restarted
-      listen: "restart apache"
