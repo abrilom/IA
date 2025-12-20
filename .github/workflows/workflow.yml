@@ -1,24 +1,18 @@
-name: Ansible Playbook Execution
-on: workflow_dispatch
+on:
+  workflow_dispatch:
 
 jobs:
-  run-ansible-playbook:
+  ejecutar_playbook:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout código
         uses: actions/checkout@v4
 
-      - name: Install Ansible, Ansible Lint, and Python dependencies
+      - name: Instalar dependencias
         run: |
-          sudo apt update
-          sudo apt install -y python3-pip
-          pip install ansible ansible-lint
+          sudo apt-get update
+          sudo apt-get install -y ansible ansible-lint sshpass
 
-      - name: Install sshpass
-        run: sudo apt install -y sshpass
-
-      - name: Perform Ansible playbook syntax check
-        run: ansible-playbook ansible/playbook.yml --syntax-check
-
-      - name: Execute Ansible playbook
-        run: ansible-playbook -i ansible/inventory ansible/playbook.yml -e "ansible_ssh_pass=${{ secrets.ANSIBLE_SSH_PASS }}" --ssh-extra-args='-o StrictHostKeyChecking=no'
+      - name: Ejecutar Playbook Ansible
+        run: |
+          ansible-playbook -i "localhost,inventory" ./playbook.yml

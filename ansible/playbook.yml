@@ -1,34 +1,53 @@
----
-- name: Install Apache
+- name: Instalar Apache y configurar puerto 8080
   hosts: all
   become: true
   tasks:
-    - name: Install Apache package
+    - name: 1. Instalar el paquete apache2
       ansible.builtin.apt:
         name: apache2
         state: present
+        update_cache: yes
 
-    - name: Configure Apache to listen on port 8080
+    - name: 2.1. Asegurar que 'Listen 80' esté comentado en ports.conf
       ansible.builtin.lineinfile:
         path: /etc/apache2/ports.conf
-        regexp: '^Listen 880'
-        line: Listen 8080
+        regexp: '^Listen 80$'
+        line: '#Listen 80'
+        state: present
+      notify: restart apache
+
+    - name: 2.2. Asegurar que 'Listen 8080' esté presente en ports.conf
+      ansible.builtin.lineinfile:
+        path: /etc/apache2/ports.conf
+        regexp: '^Listen 8080$'
+        line: 'Listen 8080'
+        state: present
+      notify: restart apache
+
+    - name: 2.3. Configurar VirtualHost por defecto para el puerto 8080
+      ansible.builtin.lineinfile:
+        path: /etc/apache2/sites-available/000-default.conf
+        regexp: '^<VirtualHost \*:80>$'
+        line: '<VirtualHost *:8080>'
+        state: present
+      notify: restart apache
+
+    - name: 2.4. Establecer owner, group y modo 0644 para 000-default.conf
+      ansible.builtin.file:
+        path: /etc/apache2/sites-available/000-default.conf
         owner: root
         group: root
         mode: '0644'
-        state: present
 
-    - name: Configure Apache to listen on IP 165.232.123.212
-      ansible.builtin.lineinfile:
-        path: /etc/apache2/ports.conf
-        regexp: '^Listen 165\.232\.123\.212'
-        line: Listen 165.232.123.212
-        owner: root
-        group: root
-        mode: '0644'
-        state: present
+    - name: 3. Comprobar que el servicio apache2 esté corriendo y habilitado
+      ansible.builtin.systemd:
+        name: apache2
+        state: started
+        enabled: true
 
-    - name: Restart Apache service
-      ansible.builtin.service:
+  handlers:
+    - name: restart apache
+      ansible.builtin.systemd:
         name: apache2
         state: restarted
+      listen: "restart apache"
