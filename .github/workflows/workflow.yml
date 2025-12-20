@@ -5,14 +5,14 @@ jobs:
   ejecutar_playbook:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout código
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Instalar dependencias
+      - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y ansible ansible-lint sshpass
 
-      - name: Ejecutar Playbook Ansible
+      - name: Run Ansible Playbook
         run: |
           ansible-playbook -i "localhost,inventory" ./playbook.yml
