@@ -1,23 +1,38 @@
+name: Ansible Playbook Execution
+
 on:
   workflow_dispatch:
 
 jobs:
-  execute_ansible_playbook:
+  run-ansible-playbook:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ansible ansible-lint sshpass
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
 
-      - name: Set ANSIBLE_SSH_PASS secret
-        uses: peter-evans/set-secret@v1
-        with:
-          secret: ${{ secrets.ANSIBLE_SSH_PASS }}
+    - name: Install system dependencies (sshpass)
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y sshpass
 
-      - name: Run Ansible playbook
-        run: |
-          ansible-playbook ansible/playbook.yml -i ansible/inventory --extra-vars "ansible_ssh_pass=${ANSIBLE_SSH_PASS}" --ssh-extra-args='-o StrictHostKeyChecking=no'
+    - name: Install Ansible and Ansible Lint
+      run: |
+        pip install ansible ansible-lint
+
+    - name: Ansible Playbook Syntax Check
+      run: |
+        ansible-playbook ansible/playbook.yml -i ansible/inventory --syntax-check
+
+    - name: Execute Ansible Playbook
+      run: |
+        ansible-playbook ansible/playbook.yml -i ansible/inventory -e "ansible_ssh_pass=${{ secrets.ANSIBLE_SSH_PASS }}" --ssh-extra-args='-o StrictHostKeyChecking=no'
+      env:
+        # Aunque la contraseña se pasa como extra var a Ansible, es buena práctica ocultar
+        # su valor en los logs de GitHub Actions si se imprime accidentalmente.
+        ANSIBLE_SSH_PASS: ${{ secrets.ANSIBLE_SSH_PASS }}
