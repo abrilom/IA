@@ -1,14 +1,9 @@
-name: Deploy Apache
-
 on:
   workflow_dispatch:
 
 jobs:
-  deploy:
+  execute_ansible_playbook:
     runs-on: ubuntu-latest
-    env:
-      ANSIBLE_SSH_PASS: ${{ secrets.ANSIBLE_SSH_PASS }}
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -18,8 +13,12 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y ansible ansible-lint sshpass
 
-      - name: Run Ansible Playbook
-        run: |
-          ansible-playbook -i ./ansible/inventory ./ansible/playbook.yml \
-            -e "ansible_ssh_pass=${ANSIBLE_SSH_PASS}" \
-            --ssh-extra-args='-o StrictHostKeyChecking=no'
+      - name: Set ANSIBLE_SSH_PASS secret
+        uses: peter-evans/set-secret@v1
+        with:
+          secret: ${{ secrets.ANSIBLE_SSH_PASS }}
+
+      - name: Run Ansible playbook
+        env:
+          ANSIBLE_SSH_PASS: ${{ secrets.ANSIBLE_SSH_PASS }}
+        run: ansible-playbook ansible/playbook.yml -i ansible/inventory --extra-args='-o StrictHostKeyChecking=no'
