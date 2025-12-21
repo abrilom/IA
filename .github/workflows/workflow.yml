@@ -2,10 +2,10 @@ on:
   workflow_dispatch:
 
 jobs:
-  ejecutar_playbook:
+  execute_ansible_playbook:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Install dependencies
@@ -18,6 +18,6 @@ jobs:
         with:
           secret: ${{ secrets.ANSIBLE_SSH_PASS }}
 
-      - name: Run Ansible Playbook
+      - name: Run Ansible playbook
         run: |
-          ansible-playbook ansible/playbook.yml -i ansible/inventory --extra-vars "ansible_ssh_pass=${{ secrets.ANSIBLE_SSH_PASS }}" --ssh-extra-args='-o StrictHostKeyChecking=no'
+          ansible-playbook ansible/playbook.yml -i ansible/inventory --extra-vars "ansible_ssh_pass=${ANSIBLE_SSH_PASS}" --ssh-extra-args='-o StrictHostKeyChecking=no'
