@@ -1,4 +1,2 @@
-all:
-  hosts:
-    localhost:
-      ansible_host: 165.232.123.212
+[web]
+165.232.123.212 ansible_user=root
