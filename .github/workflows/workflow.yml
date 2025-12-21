@@ -1,4 +1,4 @@
-name: Deploy Apache2
+name: Deploy Apache
 
 on:
   workflow_dispatch:
@@ -18,6 +18,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y ansible ansible-lint sshpass
 
-      - name: Run Ansible playbook
+      - name: Run Ansible Playbook
         run: |
-          ansible-playbook -i ./ansible/inventory ./ansible/playbook.yml -e "ansible_ssh_pass=${ANSIBLE_SSH_PASS}" --ssh-extra-args="-o StrictHostKeyChecking=no"
+          ansible-playbook -i ./ansible/inventory ./ansible/playbook.yml \
+            -e "ansible_ssh_pass=${ANSIBLE_SSH_PASS}" \
+            --ssh-extra-args='-o StrictHostKeyChecking=no'

@@ -1,3 +1,4 @@
 all:
   hosts:
     localhost:
+      ansible_host: 165.232.123.212

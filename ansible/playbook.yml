@@ -1,72 +1,67 @@
-- name: Install and configure Apache2 on port 8080
+- name: Instalar Apache y configurarlo para el puerto 8080
   hosts: all
   become: true
   tasks:
-    - name: 1. Install Apache2 package
+    - name: 1. Instalar el paquete apache2
       ansible.builtin.apt:
         name: apache2
         state: present
         update_cache: yes
 
-    - name: Ensure Apache2 service is started and enabled (initial check/start)
-      ansible.builtin.service:
-        name: apache2
-        state: started
-        enabled: true
-
-    - name: 2. Configure Apache to listen on port 8080 - Remove Listen 80 directive
-      ansible.builtin.lineinfile:
-        path: /etc/apache2/ports.conf
-        regexp: '^Listen 80$'
+    - name: 2.1. Desactivar el sitio predeterminado que escucha en el puerto 80
+      ansible.builtin.file:
+        path: /etc/apache2/sites-enabled/000-default.conf
         state: absent
-        backup: yes
-      notify: Restart apache2
 
-    - name: 2. Configure Apache to listen on port 8080 - Add Listen 8080 directive
-      ansible.builtin.lineinfile:
-        path: /etc/apache2/ports.conf
-        regexp: '^Listen 8080$'
-        line: 'Listen 8080'
-        state: present
-        insertafter: '^(Listen 443|Listen\s)' # Insert after Listen 443 or any other Listen directive
-      notify: Restart apache2
-
-    - name: 2. Configure Apache default virtual host for port 8080
+    - name: 2.2. Configurar ports.conf para escuchar en el puerto 8080
       ansible.builtin.copy:
-        dest: /etc/apache2/sites-available/000-default.conf
         content: |
-          <VirtualHost *:8080>
-              ServerAdmin webmaster@localhost
-              DocumentRoot /var/www/html
-              ErrorLog ${APACHE_LOG_DIR}/error.log
-              CustomLog ${APACHE_LOG_DIR}/access.log combined
-              <Directory /var/www/html>
-                  Options Indexes FollowSymLinks
-                  AllowOverride None
-                  Require all granted
-              </Directory>
-          </VirtualHost>
+          # If you just change the port or add more Listen directives here,
+          # you will also have to change the VirtualHost statement in
+          # /etc/apache2/sites-enabled/000-default.conf
+
+          Listen 8080
+
+          <IfModule ssl_module>
+                  Listen 443
+          </IfModule>
+
+          <IfModule mod_gnutls.c>
+                  Listen 443
+          </IfModule>
+
+          # vim: syntax=apache ts=4 sw=4 sts=4 sr noet
+        dest: /etc/apache2/ports.conf
         owner: root
         group: root
         mode: '0644'
-      notify: Restart apache2
 
-    - name: 2. Enable the default virtual host for port 8080 by creating a symlink
+    - name: 2.3. Crear archivo de configuración del VirtualHost para el puerto 8080
+      ansible.builtin.copy:
+        content: |
+          <VirtualHost *:8080>
+                  ServerAdmin webmaster@localhost
+                  DocumentRoot /var/www/html
+
+                  ErrorLog ${APACHE_LOG_DIR}/error.log
+                  CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+                  <Directory /var/www/html>
+                      Options Indexes FollowSymLinks
+                      AllowOverride All
+                      Require all granted
+                  </Directory>
+          </VirtualHost>
+
+          # vim: syntax=apache ts=4 sw=4 sts=4 sr noet
+        dest: /etc/apache2/sites-available/000-default-8080.conf
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: 2.4. Habilitar el VirtualHost para el puerto 8080 (crear symlink)
       ansible.builtin.file:
-        src: /etc/apache2/sites-available/000-default.conf
-        dest: /etc/apache2/sites-enabled/000-default.conf
+        src: /etc/apache2/sites-available/000-default-8080.conf
+        dest: /etc/apache2/sites-enabled/000-default-8080.conf
         state: link
-        force: true
-      notify: Restart apache2
-
-    - name: 3. Comprobar que el servicio este corriendo y habilitado
-      ansible.builtin.service:
-        name: apache2
-        state: started
-        enabled: true
-
-  handlers:
-    - name: Restart apache2
-      ansible.builtin.service:
-        name: apache2
-        state: restarted
+        force: yes
